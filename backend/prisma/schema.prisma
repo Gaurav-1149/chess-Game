@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum GameResult {
+  Player1_Wins
+  Player2_Wins
+  Draw
+  ABANDONED
+}
+
+enum PlayerColor {
+  W
+  B
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String
+  password String
+  rating Int @default(400)
+  profilePic String?
+  createdAt DateTime @default(now()) 
+  gameAsPlayer1 Game[] @relation("Player1Games")
+  gameAsPlayer2 Game[] @relation("Player2Games")
+}
+
+model Game {
+  id Int @id @default(autoincrement()) 
+  player1 User @relation("Player1Games",fields: [player1Id], references: [id])
+  player1Id Int
+  player2 User @relation("Player2Games", fields: [player2Id], references: [id])
+  player2Id Int
+  result GameResult
+  ratingChange Int
+  startedAt DateTime @default(now())
+  endedAt DateTime
+  moves Moves[]
+  
+}
+
+model Moves{
+  id Int @id @default(autoincrement())
+  game Game @relation(fields: [gameId], references: [id])
+  gameId Int
+  moveNumber Int @default(autoincrement())
+  playerColor PlayerColor
+  moveNotation String
+  timestamp DateTime
+
+}
